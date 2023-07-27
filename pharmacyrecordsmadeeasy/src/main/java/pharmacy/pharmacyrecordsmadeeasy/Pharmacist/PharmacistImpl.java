@@ -1,4 +1,5 @@
 package pharmacy.pharmacyrecordsmadeeasy.Pharmacist;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import pharmacy.pharmacyrecordsmadeeasy.DTO.AllData;
 import pharmacy.pharmacyrecordsmadeeasy.DTO.Response;
@@ -11,13 +12,14 @@ import pharmacy.pharmacyrecordsmadeeasy.VerificationCode.VerificationCodeGenerat
 @Service
 public class PharmacistImpl implements PharmacistService{
     private final PharmacistRepo pharmacistRepo;
-//    private final PasswordEncoder passwordEncoder;
+    private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
     private final VerificationCodeGenerator verificationCodeGenerator;
     private final ReferralCodeGenerator referralCodeGenerator;
 
-    public PharmacistImpl(PharmacistRepo pharmacistRepo, EmailService emailService, VerificationCodeGenerator verificationCodeGenerator, ReferralCodeGenerator referralCodeGenerator) {
+    public PharmacistImpl(PharmacistRepo pharmacistRepo, PasswordEncoder passwordEncoder, EmailService emailService, VerificationCodeGenerator verificationCodeGenerator, ReferralCodeGenerator referralCodeGenerator) {
         this.pharmacistRepo = pharmacistRepo;
+        this.passwordEncoder = passwordEncoder;
 //        this.passwordEncoder = passwordEncoder;
         this.emailService = emailService;
         this.verificationCodeGenerator = verificationCodeGenerator;
@@ -40,10 +42,10 @@ public class PharmacistImpl implements PharmacistService{
                         .name(pharmacyRequest.getName())
                         .username(pharmacyRequest.getUsername())
                         .gender(pharmacyRequest.getGender())
-//                        .password(passwordEncoder.encode(pharmacyRequest.getPassword()))
-                        .password(pharmacyRequest.getPassword())
+                        .password(passwordEncoder.encode(pharmacyRequest.getPassword()))
+//                        .password(pharmacyRequest.getPassword())
                         .address(pharmacyRequest.getAddress())
-                        .roles(Roles.ADMIN)
+                        .roles(Roles.ROLE_ADMIN)
                         .contactInformation(pharmacyRequest.getContactInformation())
                         .build();
 
@@ -120,14 +122,14 @@ public class PharmacistImpl implements PharmacistService{
                     .build();
         }else{
             PharmacistEntity existingUser=pharmacistRepo.findByEmail(detail.getEmail()).get();
-            existingUser.setPassword(detail.getPassword());
+            existingUser.setPassword(passwordEncoder.encode(detail.getPassword()));
             existingUser.setAddress(detail.getAddress());
             existingUser.setName(detail.getName());
             existingUser.setUsername(detail.getUsername());
             existingUser.setEmail(detail.getEmail());
             existingUser.setContactInformation(detail.getContactInformation());
             existingUser.setGender(detail.getGender());
-            existingUser.setRoles(Roles.ADMIN);
+            existingUser.setRoles(Roles.ROLE_ADMIN);
 
             PharmacistEntity update=pharmacistRepo.save(existingUser);
             return Response.builder()

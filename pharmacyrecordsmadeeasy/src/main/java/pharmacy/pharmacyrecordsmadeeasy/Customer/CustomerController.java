@@ -19,10 +19,6 @@ public class CustomerController {
     public Response signup(@RequestBody Dto dto) {
         return customerService.signup(dto);
     }
-//    @PostMapping("/login")
-//    public ResponseEntity<AuthenticationResponse> login(@RequestBody LoginDto loginDto){
-//        return ResponseEntity.ok(customerService.login(loginDto));
-//    }
     @GetMapping("/all")
     public List<CustomerEntity>getAll(){
         return customerService.getAll();

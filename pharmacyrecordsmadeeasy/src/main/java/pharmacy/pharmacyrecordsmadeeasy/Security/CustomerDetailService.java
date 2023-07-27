@@ -16,7 +16,6 @@ import pharmacy.pharmacyrecordsmadeeasy.Response.Roles;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 public class CustomerDetailService implements UserDetailsService {
@@ -31,31 +30,31 @@ public class CustomerDetailService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String usernameOrEmail) throws UsernameNotFoundException {
-        CustomerEntity customer = customerRepo.findByEmailOrUsername(usernameOrEmail, usernameOrEmail)
-                .orElseThrow(() -> new UsernameNotFoundException("User with provided credentials not found"));
+        CustomerEntity customer = customerRepo.findByEmailOrUsername(usernameOrEmail, usernameOrEmail).orElse(null);
+        PharmacistEntity pharmacist = pharmacistRepo.findByEmailOrUsername(usernameOrEmail, usernameOrEmail).orElse(null);
 
-        PharmacistEntity pharmacist = pharmacistRepo.findByEmailOrUsername(usernameOrEmail, usernameOrEmail)
-                .orElseThrow(() -> new UsernameNotFoundException("User with provided credentials not found"));
+        if (customer == null && pharmacist == null) {
+            throw new UsernameNotFoundException("User with provided credentials not found");
+        }
 
         Set<GrantedAuthority> authorities = new HashSet<>();
 
-        // Handle authorities for CustomerEntity (e.g., "ROLE_USER")
-        authorities.add(new SimpleGrantedAuthority(Roles.USER.toString()));
+        if (customer != null) {
+            // Handle authorities for CustomerEntity (e.g., "ROLE_USER")
+            authorities.add(new SimpleGrantedAuthority(Roles.ROLE_USER.name()));
+        }
 
+        if (pharmacist != null) {
+            // Handle authorities for PharmacistEntity (e.g., "ROLE_ADMIN")
+            authorities.add(new SimpleGrantedAuthority(Roles.ROLE_ADMIN.name()));
+        }
 
-//        if (customer != null) {
-//            // Handle authorities for CustomerEntity (e.g., "ROLE_USER")
-//            authorities.add(new SimpleGrantedAuthority(Roles.USER.toString()));
-//        }
+        String password = (customer != null) ? customer.getPassword() : pharmacist.getPassword();
 
-
-//        if (pharmacist != null) {
-//            // Handle authorities for PharmacistEntity (e.g., "ROLE_ADMIN")
-//            authorities.add(new SimpleGrantedAuthority(Roles.ADMIN.toString()));
-//        }
-
-        return new User(customer.getUsername(), customer.getPassword(), authorities);
+        // Use UserDetails interface instead of concrete User class
+        return User.withUsername((customer != null) ? customer.getUsername() : pharmacist.getUsername())
+                .password(password)
+                .authorities(authorities)
+                .build();
     }
-
-
 }

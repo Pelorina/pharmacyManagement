@@ -53,7 +53,7 @@ public class ServiceImpl implements CustomerService {
                     .password(passwordEncoder.encode(dto.getPassword()))
 //                    .password(dto.getPassword())
                     .address(dto.getAddress())
-                    .roles(Roles.USER)
+                    .roles(Roles.ROLE_USER)
                     .contactInformation(dto.getContactInformation())
                     .build();
 
@@ -93,14 +93,14 @@ public class ServiceImpl implements CustomerService {
                     .build();
         }else{
             CustomerEntity existingUser=customerRepo.findByName(updateDto.getName()).get();
-            existingUser.setPassword(updateDto.getPassword());
+            existingUser.setPassword(passwordEncoder.encode(updateDto.getPassword()));
             existingUser.setAddress(updateDto.getAddress());
             existingUser.setName(updateDto.getName());
             existingUser.setUsername(updateDto.getUsername());
             existingUser.setEmail(updateDto.getEmail());
             existingUser.setContactInformation(updateDto.getContactInformation());
             existingUser.setGender(updateDto.getGender());
-            existingUser.setRoles(Roles.USER);
+            existingUser.setRoles(Roles.ROLE_USER);
 
             CustomerEntity update=customerRepo.save(existingUser);
             return Response.builder()

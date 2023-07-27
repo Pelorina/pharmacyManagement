@@ -9,7 +9,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import pharmacy.pharmacyrecordsmadeeasy.Customer.CustomerRepo;
+import pharmacy.pharmacyrecordsmadeeasy.Customer.CustomerService;
+import pharmacy.pharmacyrecordsmadeeasy.Customer.Dto;
 import pharmacy.pharmacyrecordsmadeeasy.DTO.LoginDto;
+import pharmacy.pharmacyrecordsmadeeasy.DTO.Response;
 import pharmacy.pharmacyrecordsmadeeasy.Pharmacist.PharmacistRepo;
 
 @RestController
@@ -25,9 +28,14 @@ public class AuthController {
     PasswordEncoder passwordEncoder;
     @Autowired
     AuthService authService;
+    @Autowired
+    CustomerService customerService;
+//    @PostMapping("/signup")
+//    public Response signup(@RequestBody Dto dto) {
+//        return customerService.signup(dto);
+//    }
 
-
-    @PostMapping("/login")
+     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@RequestBody LoginDto loginDto){
         return  ResponseEntity.ok(authService.login(loginDto));
     }

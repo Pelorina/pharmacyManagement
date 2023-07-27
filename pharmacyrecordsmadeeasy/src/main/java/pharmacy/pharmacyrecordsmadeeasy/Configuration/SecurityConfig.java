@@ -19,69 +19,63 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import pharmacy.pharmacyrecordsmadeeasy.Customer.CustomerRepo;
+import pharmacy.pharmacyrecordsmadeeasy.Pharmacist.PharmacistRepo;
+import pharmacy.pharmacyrecordsmadeeasy.Security.CustomerDetailService;
 import pharmacy.pharmacyrecordsmadeeasy.Security.JwtAuthenticationEntryPoint;
 import pharmacy.pharmacyrecordsmadeeasy.Security.JwtAuthenticationFilter;
 
 @Configuration
 @AllArgsConstructor
 @EnableWebSecurity
-//@EnableMethodSecurity
+@EnableMethodSecurity
 public class SecurityConfig {
-    private JwtAuthenticationEntryPoint authenticationEntryPoint;
-    private UserDetailsService userDetailsService;
-    private JwtAuthenticationFilter jwtAuthenticationFilter;
+
+    private final JwtAuthenticationEntryPoint authenticationEntryPoint;
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final CustomerDetailService customerDetailService; // Spring will automatically inject this instance.
 
     @Bean
-    public static PasswordEncoder passwordEncoder() {
+    public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
-
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
         return configuration.getAuthenticationManager();
     }
+//    @Bean
+//    public UserDetailsService userDetailsService() {
+//        return new CustomerDetailsService(customerRepo, pharmacistRepo);
+//    }
 
-    @Bean
-    public AuthenticationProvider authenticationProvider() {
-        DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider();
-        authenticationProvider.setUserDetailsService(userDetailsService);
-        authenticationProvider.setPasswordEncoder(passwordEncoder());
-        return authenticationProvider;
-    }
 
 //    @Bean
-//    SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
-//        httpSecurity.csrf(AbstractHttpConfigurer::disable)
-//                .authorizeHttpRequests(authorize ->
-//                        //authorize.anyRequest().authenticated()
-//                        authorize.requestMatchers(HttpMethod.POST, "/api/signup").permitAll()
-//                                .requestMatchers(HttpMethod.POST,"/api/auth/login").permitAll()
-//                                .anyRequest()
-//                                .authenticated()
-//                ).httpBasic(Customizer.withDefaults());
-//
-//        httpSecurity.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
-//        httpSecurity.authenticationProvider(authenticationProvider());
-//        httpSecurity.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
-//
-//        return httpSecurity.build();
+//    public AuthenticationProvider authenticationProvider() {
+//        DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider();
+//        authenticationProvider.setUserDetailsService(customerDetailService);
+//        authenticationProvider.setPasswordEncoder(passwordEncoder());
+//        return authenticationProvider;
 //    }
+
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
-        httpSecurity.csrf(AbstractHttpConfigurer::disable)
-
+        httpSecurity
+                .csrf(AbstractHttpConfigurer::disable)
                 .exceptionHandling(exception -> exception.authenticationEntryPoint(authenticationEntryPoint))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-
-
                 .authorizeHttpRequests(authorize ->
-                        //authorize.anyRequest().authenticated()
                         authorize.requestMatchers(HttpMethod.POST, "/api/signup").permitAll()
-                                .requestMatchers(HttpMethod.POST,"/api/auth/login").permitAll()
-//                                .requestMatchers("api/all").hasAuthority("USER")
-                                .anyRequest().authenticated()
-                ).httpBasic(Customizer.withDefaults());
+                                .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
+                                .requestMatchers("/api/all").hasRole("ADMIN")
+                                .requestMatchers("/api/admin/create").permitAll()
+                                .requestMatchers("/api/id").hasRole("ADMIN")
+                                .requestMatchers("/api/update").hasRole("USER")
 
+                                .anyRequest().authenticated()
+                )
+                .httpBasic(Customizer.withDefaults());
+
+//        httpSecurity.authenticationProvider(authenticationProvider());
         httpSecurity.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return httpSecurity.build();

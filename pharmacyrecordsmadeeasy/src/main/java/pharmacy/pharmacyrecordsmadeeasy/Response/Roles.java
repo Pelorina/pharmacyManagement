@@ -3,8 +3,8 @@ package pharmacy.pharmacyrecordsmadeeasy.Response;
 import io.micrometer.observation.ObservationFilter;
 
 public enum Roles {
-    USER,
-    ADMIN;
+  ROLE_USER,
+   ROLE_ADMIN;
 
 
 }

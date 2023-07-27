@@ -27,6 +27,7 @@ public class AuthServiceImpl implements AuthService{
     }
     @Override
     public AuthResponse login(LoginDto loginDto) {
+
         Authentication authentication= authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(loginDto.getUsername(),loginDto.getPassword())
         );
